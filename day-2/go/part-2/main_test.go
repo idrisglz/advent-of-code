@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 )
 
@@ -18,9 +17,6 @@ var testCases = []struct {
 }
 
 func TestIsEligible(t *testing.T) {
-	greenRegex := regexp.MustCompile(`(\d+)\s*green`)
-	blueRegex := regexp.MustCompile(`(\d+)\s*blue`)
-	redRegex := regexp.MustCompile(`(\d+)\s*red`)
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("Checking %s", testCase.text), func(t *testing.T) {

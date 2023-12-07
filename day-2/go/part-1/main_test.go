@@ -17,10 +17,9 @@ var testCases = []struct {
 }
 
 func TestIsEligible(t *testing.T) {
-
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("Checking %s", testCase.text), func(t *testing.T) {
-			actual_result := isEligible(testCase.text)
+			actual_result := isEligible(testCase.text, greenRegex, blueRegex, redRegex)
 			if actual_result != testCase.expected {
 				t.Errorf("Result is not equal to the expected result, %s - %t vs %t", testCase.text, actual_result, testCase.expected)
 			}

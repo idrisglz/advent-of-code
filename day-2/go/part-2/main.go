@@ -109,11 +109,14 @@ var inputs []string = []string{
 	"Game 100: 5 green, 11 blue, 6 red; 5 green, 12 blue; 1 green, 14 blue, 1 red; 3 blue, 5 red, 6 green; 9 blue; 6 red",
 }
 
+var (
+	greenRegex = regexp.MustCompile(`(\d+)\s*green`)
+	blueRegex  = regexp.MustCompile(`(\d+)\s*blue`)
+	redRegex   = regexp.MustCompile(`(\d+)\s*red`)
+)
+
 func main() {
 	sum := 0
-	greenRegex := regexp.MustCompile(`(\d+)\s*green`)
-	blueRegex := regexp.MustCompile(`(\d+)\s*blue`)
-	redRegex := regexp.MustCompile(`(\d+)\s*red`)
 
 	for _, input := range inputs {
 		green, blue, red := getMaxCount(input, greenRegex, blueRegex, redRegex)

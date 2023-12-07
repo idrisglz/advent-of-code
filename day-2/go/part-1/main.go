@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -111,90 +110,83 @@ var inputs []string = []string{
 	"Game 100: 5 green, 11 blue, 6 red; 5 green, 12 blue; 1 green, 14 blue, 1 red; 3 blue, 5 red, 6 green; 9 blue; 6 red",
 }
 
-func main() {
+const (
+	redLimit   = 12
+	greenLimit = 13
+	blueLimit  = 14
+)
 
-	eligibleIds := []int{}
+var (
+	greenRegex = regexp.MustCompile(`(\d+)\s*green`)
+	blueRegex  = regexp.MustCompile(`(\d+)\s*blue`)
+	redRegex   = regexp.MustCompile(`(\d+)\s*red`)
+)
+
+func main() {
+	var sum int
 
 	for _, input := range inputs {
-		id, err := getId(input)
+		// id := getId(input, idRegex)
+		id, err := parseGameId(input)
 		if err != nil {
-			os.Exit(1)
+			panic(err)
 		}
 
-		if isEligible(input) {
-			eligibleIds = append(eligibleIds, id)
+		if isEligible(input, greenRegex, blueRegex, redRegex) {
+			sum += id
 		}
-
-	}
-
-	sum := 0
-	for _, id := range eligibleIds {
-		sum += id
 	}
 	fmt.Println(sum)
 }
 
-func isEligible(input string) bool {
-	redLimit := 12
-	greenLimit := 13
-	blueLimit := 14
-
+func isEligible(input string, greenRegex *regexp.Regexp, blueRegex *regexp.Regexp, redRegex *regexp.Regexp) bool {
 	startIndex := strings.Index(input, ":")
-	values_input := input[startIndex+1:]
-	parts := strings.Split(values_input, ";")
+	colorValues := input[startIndex+1:]
+	parts := strings.Split(colorValues, ";")
 
 	for _, p := range parts {
-		green, blue, red, err := countColors(p)
-		if err != nil || green > greenLimit || red > redLimit || blue > blueLimit {
+		green, greenErr := getCount(p, greenRegex)
+		blue, blueErr := getCount(p, blueRegex)
+		red, redErr := getCount(p, redRegex)
+
+		if greenErr != nil || blueErr != nil || redErr != nil {
+			panic("Error occurred while getting count")
+		}
+
+		if green > greenLimit || red > redLimit || blue > blueLimit {
 			return false
 		}
 	}
 	return true
 }
 
-func getId(input string) (id int, err error) {
-	idRegex := regexp.MustCompile(`Game\s*(\d+):`)
+func parseGameId(input string) (id int, err error) {
+	spaceIndex := strings.Index(input, " ")
+	colonIndex := strings.Index(input, ":")
 
-	idMatch := idRegex.FindStringSubmatch(input)
-	if idMatch != nil {
-		fmt.Println(idMatch)
-		id, err = strconv.Atoi(idMatch[1])
-		if err != nil {
-			return 0, err
-		}
-
+	if spaceIndex == -1 || colonIndex == -1 || spaceIndex >= colonIndex {
+		return 0, fmt.Errorf("invalid format")
 	}
+
+	idStr := input[spaceIndex+1 : colonIndex]
+	id, err = strconv.Atoi(idStr)
+	if err != nil {
+		return 0, fmt.Errorf("invalid ID: %w", err)
+	}
+
 	return id, nil
 }
 
-func countColors(input string) (green int, blue int, red int, err error) {
-	greenRegex := regexp.MustCompile(`(\d+)\s*green`)
-	blueRegex := regexp.MustCompile(`(\d+)\s*blue`)
-	redRegex := regexp.MustCompile(`(\d+)\s*red`)
-
-	greenMatch := greenRegex.FindStringSubmatch(input)
-	if greenMatch != nil {
-		green, err = strconv.Atoi(greenMatch[1])
-		if err != nil {
-			return 0, 0, 0, err
-		}
+func getCount(input string, colorRegex *regexp.Regexp) (count int, err error) {
+	match := colorRegex.FindStringSubmatch(input)
+	if match == nil {
+		return 0, nil
 	}
 
-	blueMatch := blueRegex.FindStringSubmatch(input)
-	if blueMatch != nil {
-		blue, err = strconv.Atoi(blueMatch[1])
-		if err != nil {
-			return 0, 0, 0, err
-		}
+	count, err = strconv.Atoi(match[1])
+	if err != nil {
+		return 0, fmt.Errorf("invalid count: %w", err)
 	}
 
-	redMatch := redRegex.FindStringSubmatch(input)
-	if redMatch != nil {
-		red, err = strconv.Atoi(redMatch[1])
-		if err != nil {
-			return 0, 0, 0, err
-		}
-	}
-
-	return green, blue, red, nil
+	return count, nil
 }
