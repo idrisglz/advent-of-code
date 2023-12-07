@@ -1017,87 +1017,48 @@ func main() {
 func calculateSum(values []string) int {
 	sum := 0
 	for _, text := range values {
-		sum += getCalibrationValues(text)
+		num, err := getCalibrationValues(text)
+		if err != nil {
+			fmt.Println(err)
+			return -1
+		}
+		sum += num
 	}
 	return sum
 }
 
-func getCalibrationValues(input string) int {
-	digit_texts := map[string]string{"one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9"}
+func getCalibrationValues(input string) (int, error) {
+	digitTexts := map[string]string{"one": "1", "two": "2", "three": "3", "four": "4", "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9"}
+	var firstDigit, lastDigit string
 
-	first_digit_input := replaceFirstDigitText(input, digit_texts)
-	first_digit := findFirstDigit(first_digit_input)
-
-	last_digit_input := replaceLastDigitText(input, digit_texts)
-	last_digit := findLastDigit(last_digit_input)
-
-	result, err := strconv.Atoi(first_digit + last_digit)
-
-	if err != nil {
-		fmt.Println(err)
-		return -1
-	}
-
-	return result
-}
-
-func replaceFirstDigitText(input string, digit_texts map[string]string) string {
-	lowest_index := len(input)
-	var text_to_replace string
-	for key := range digit_texts {
-		index := strings.Index(input, key)
-		if index <= lowest_index && index >= 0 {
-			lowest_index = index
-			text_to_replace = key
-		}
-	}
-
-	input = strings.Replace(input, text_to_replace, digit_texts[text_to_replace], 1)
-
-	return input
-}
-
-func replaceLastDigitText(input string, digit_texts map[string]string) string {
-	highest_index := -1
-	var text_to_replace string
-	for key := range digit_texts {
-		index := strings.LastIndex(input, key)
-		if index >= highest_index && index >= 0 {
-			highest_index = index
-			text_to_replace = key
-		}
-	}
-
-	input = strings.Replace(input, text_to_replace, digit_texts[text_to_replace], -1)
-
-	return input
-}
-
-func findFirstDigit(input string) string {
-	var first_digit string
-	for _, letter := range input {
-		if unicode.IsDigit(letter) {
-			first_digit = string(letter)
+first_digit_loop:
+	for i, r := range input {
+		if unicode.IsDigit(r) {
+			firstDigit = string(r)
 			break
 		}
-	}
-	return first_digit
-}
 
-func findLastDigit(input string) string {
-	var last_digit string
-	letters := []rune(input)
-	for i := len(letters) - 1; i >= 0; i-- {
-		if unicode.IsDigit(letters[i]) {
-			last_digit = string(letters[i])
-			break
+		for text, digit := range digitTexts {
+			if strings.HasPrefix(input[i:], text) {
+				firstDigit = digit
+				break first_digit_loop
+			}
 		}
 	}
-	return last_digit
-}
 
-// func printAll(values []string) {
-// 	for _, text := range values {
-// 		fmt.Printf("{\"%s\", %d},\n", text, getCalibrationValues(text))
-// 	}
-// }
+last_digit_loop:
+	for i := len(input); i > 0; i-- {
+		if unicode.IsDigit(rune(input[i-1])) {
+			lastDigit = string(input[i-1])
+			break
+		}
+		for text, digit := range digitTexts {
+			if strings.HasSuffix(input[:i], text) {
+				lastDigit = digit
+				break last_digit_loop
+			}
+		}
+	}
+
+	return strconv.Atoi(firstDigit + lastDigit)
+}
