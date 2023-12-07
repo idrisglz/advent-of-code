@@ -1052,9 +1052,7 @@ func replaceFirstDigitText(input string, digit_texts map[string]string) string {
 		}
 	}
 
-	if lowest_index != len(input) {
-		input = strings.Replace(input, text_to_replace, digit_texts[text_to_replace], 1)
-	}
+	input = strings.Replace(input, text_to_replace, digit_texts[text_to_replace], 1)
 
 	return input
 }
@@ -1070,9 +1068,7 @@ func replaceLastDigitText(input string, digit_texts map[string]string) string {
 		}
 	}
 
-	if highest_index != -1 {
-		input = strings.Replace(input, text_to_replace, digit_texts[text_to_replace], -1)
-	}
+	input = strings.Replace(input, text_to_replace, digit_texts[text_to_replace], -1)
 
 	return input
 }
