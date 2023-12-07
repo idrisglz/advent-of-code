@@ -1011,7 +1011,7 @@ var values []string = []string{
 }
 
 func main() {
-	calculateSum(values)
+	fmt.Println(calculateSum(values))
 }
 
 func calculateSum(values []string) int {
@@ -1019,7 +1019,6 @@ func calculateSum(values []string) int {
 	for _, text := range values {
 		sum += getCalibrationValues(text)
 	}
-	fmt.Println(sum)
 	return sum
 }
 
