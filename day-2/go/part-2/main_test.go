@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 )
 
@@ -17,10 +18,13 @@ var testCases = []struct {
 }
 
 func TestIsEligible(t *testing.T) {
+	greenRegex := regexp.MustCompile(`(\d+)\s*green`)
+	blueRegex := regexp.MustCompile(`(\d+)\s*blue`)
+	redRegex := regexp.MustCompile(`(\d+)\s*red`)
 
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("Checking %s", testCase.text), func(t *testing.T) {
-			green, blue, red, _ := getMaxCount(testCase.text)
+			green, blue, red := getMaxCount(testCase.text, greenRegex, blueRegex, redRegex)
 			actual_result := green * blue * red
 			if actual_result != testCase.expected {
 				t.Errorf("Result is not equal to the expected result, %s - %d vs %d", testCase.text, actual_result, testCase.expected)

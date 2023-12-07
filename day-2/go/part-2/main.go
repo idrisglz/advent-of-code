@@ -111,8 +111,12 @@ var inputs []string = []string{
 
 func main() {
 	sum := 0
+	greenRegex := regexp.MustCompile(`(\d+)\s*green`)
+	blueRegex := regexp.MustCompile(`(\d+)\s*blue`)
+	redRegex := regexp.MustCompile(`(\d+)\s*red`)
+
 	for _, input := range inputs {
-		green, blue, red, _ := getMaxCount(input)
+		green, blue, red := getMaxCount(input, greenRegex, blueRegex, redRegex)
 		power := green * blue * red
 		sum += power
 	}
@@ -120,30 +124,26 @@ func main() {
 	fmt.Println(sum)
 }
 
-func getMaxCount(input string) (int, int, int, error) {
-	greenRegex := regexp.MustCompile(`(\d+)\s*green`)
-	blueRegex := regexp.MustCompile(`(\d+)\s*blue`)
-	redRegex := regexp.MustCompile(`(\d+)\s*red`)
+func getMaxCount(input string, greenRegex *regexp.Regexp, blueRegex *regexp.Regexp, redRegex *regexp.Regexp) (int, int, int) {
+	maxGreen := getMax(input, greenRegex)
+	maxBlue := getMax(input, blueRegex)
+	maxRed := getMax(input, redRegex)
 
-	var maxGreen, maxBlue, maxRed int
+	return maxGreen, maxBlue, maxRed
+}
 
-	greenMatches := greenRegex.FindAllStringSubmatch(input, -1)
-	for _, match := range greenMatches {
-		count, _ := strconv.Atoi(match[1])
-		maxGreen = max(maxGreen, count)
+func getMax(input string, colorRegex *regexp.Regexp) int {
+	var maxCount int
+
+	matches := colorRegex.FindAllStringSubmatch(input, -1)
+	for _, match := range matches {
+		count, err := strconv.Atoi(match[1])
+
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		maxCount = max(maxCount, count)
 	}
-
-	blueMatches := blueRegex.FindAllStringSubmatch(input, -1)
-	for _, match := range blueMatches {
-		count, _ := strconv.Atoi(match[1])
-		maxBlue = max(maxBlue, count)
-	}
-
-	redMatches := redRegex.FindAllStringSubmatch(input, -1)
-	for _, match := range redMatches {
-		count, _ := strconv.Atoi(match[1])
-		maxRed = max(maxRed, count)
-	}
-
-	return maxGreen, maxBlue, maxRed, nil
+	return maxCount
 }
