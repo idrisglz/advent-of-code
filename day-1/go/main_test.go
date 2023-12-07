@@ -52,5 +52,3 @@ func BenchmarkGetCalibrationValues(b *testing.B) {
 		}
 	}
 }
-
-// Run with: go test -bench=BenchmarkMyFunction

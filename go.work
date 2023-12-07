@@ -1,0 +1,7 @@
+go 1.21.1
+
+use (
+	./day-1/go
+	./day-2/go/part-1
+    ./day-2/go/part-2
+)
