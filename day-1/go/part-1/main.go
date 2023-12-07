@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	filename = "input.txt"
+	filename = "../input.txt"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 }
 
 func readInputFile(filename string) []string {
-	file, err := os.Open("../" + filename)
+	file, err := os.Open(filename)
 	if err != nil {
 		panic("Unable to read the input file")
 	}

@@ -13,7 +13,7 @@ const (
 	redLimit   = 12
 	greenLimit = 13
 	blueLimit  = 14
-	filename   = "input.txt"
+	filename   = "../input.txt"
 )
 
 var (
@@ -41,7 +41,7 @@ func main() {
 }
 
 func readInputFile(filename string) []string {
-	file, err := os.Open("../" + filename)
+	file, err := os.Open(filename)
 	if err != nil {
 		panic("Unable to read the input file")
 	}
