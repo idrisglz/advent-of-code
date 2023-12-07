@@ -126,7 +126,6 @@ func main() {
 	var sum int
 
 	for _, input := range inputs {
-		// id := getId(input, idRegex)
 		id, err := parseGameId(input)
 		if err != nil {
 			panic(err)
