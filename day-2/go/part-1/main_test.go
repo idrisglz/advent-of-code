@@ -6,8 +6,8 @@ import (
 )
 
 var testCases = []struct {
-	text     string
-	expected bool
+	text           string
+	expectedResult bool
 }{
 	{"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green", true},
 	{"Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue", true},
@@ -19,11 +19,10 @@ var testCases = []struct {
 func TestIsEligible(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("Checking %s", testCase.text), func(t *testing.T) {
-			actual_result := isEligible(testCase.text, greenRegex, blueRegex, redRegex)
-			if actual_result != testCase.expected {
-				t.Errorf("Result is not equal to the expected result, %s - %t vs %t", testCase.text, actual_result, testCase.expected)
+			actualResult := isEligible(testCase.text, greenRegex, blueRegex, redRegex)
+			if actualResult != testCase.expectedResult {
+				t.Errorf("Result is not equal to the expected result, %s - %t vs %t", testCase.text, actualResult, testCase.expectedResult)
 			}
-
 		})
 	}
 

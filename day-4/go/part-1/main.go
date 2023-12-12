@@ -13,66 +13,93 @@ import (
 const filename = "../input.txt"
 
 func main() {
-	input := readInputFile(filename)
-	var sum int
-
-	for _, card := range input {
-		fmt.Println(card)
-		parts := strings.Split(card, "|")
-		winnersPart := strings.Split(parts[0], ":")
-		winnersPart = strings.Split(winnersPart[1], " ")
-
-		actualsPart := strings.Split(parts[1], " ")
-		winners := []int{}
-		actualNumbers := []int{}
-		var winnerCount int
-
-		for _, winner := range winnersPart {
-			if winner != "" {
-				num, err := strconv.Atoi(strings.TrimSpace(winner))
-				if err != nil {
-					fmt.Println("Unable to convert to a number")
-				}
-				winners = append(winners, num)
-			}
-		}
-
-		for _, actual := range actualsPart {
-			if actual != "" {
-				num, err := strconv.Atoi(strings.TrimSpace(actual))
-				if err != nil {
-					fmt.Println("Unable to convert to a number")
-				}
-				actualNumbers = append(actualNumbers, num)
-			}
-
-		}
-
-		for _, actualNumber := range actualNumbers {
-			if slices.Contains(winners, actualNumber) {
-				winnerCount++
-			}
-		}
-
-		result := int(math.Pow(2, float64(winnerCount)-1))
-		fmt.Println(result)
-		sum += result
+	cards, err := readInputFile(filename)
+	if err != nil {
+		fmt.Println("unable to read the input file. exiting")
+		return
 	}
+
+	sum := calculateTotal(cards)
+
 	fmt.Println(sum)
 }
 
-func readInputFile(filename string) []string {
+func calculateTotal(cards []string) int {
+	var sum int
+	for _, card := range cards {
+		winners, actualNumbers, err := parseCard(card)
+		if err != nil {
+			fmt.Println("unable to extract numbers, skipping")
+			continue
+		}
+
+		winnerCount := countWinners(winners, actualNumbers)
+
+		sum += int(math.Pow(2, float64(winnerCount)-1))
+	}
+	return sum
+}
+
+func parseCard(card string) (winners []int, actualNumbers []int, err error) {
+	parts := strings.Split(card, "|")
+	if len(parts) != 2 {
+		return nil, nil, fmt.Errorf("invalid card format")
+	}
+
+	winners, err = extractNumbers(strings.Split(parts[0], ":")[1])
+	if err != nil {
+		return nil, nil, err
+	}
+
+	actualNumbers, err = extractNumbers(parts[1])
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return winners, actualNumbers, nil
+}
+
+func extractNumbers(s string) ([]int, error) {
+	fmt.Println(s)
+	var numbers []int
+	for _, str := range strings.Fields(s) {
+		num, err := strconv.Atoi(str)
+		if err != nil {
+			return nil, fmt.Errorf("invalid number: %v", err)
+		}
+		numbers = append(numbers, num)
+	}
+	return numbers, nil
+}
+
+func countWinners(winners []int, actualNumbers []int) int {
+	var winnerCount int
+	for _, actualNumber := range actualNumbers {
+		if slices.Contains(winners, actualNumber) {
+			winnerCount++
+		}
+	}
+	return winnerCount
+}
+
+func readInputFile(filename string) ([]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		panic("Unable to read the input file")
+		return nil, err
 	}
 
 	defer file.Close()
 
-	var inputs []string
+	var lines []string
 	scanner := bufio.NewScanner(file)
+
 	for scanner.Scan() {
-		inputs = append(inputs, scanner.Text())
+		lines = append(lines, scanner.Text())
 	}
-	return inputs
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return lines, nil
 }

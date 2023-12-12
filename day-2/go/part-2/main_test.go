@@ -6,8 +6,8 @@ import (
 )
 
 var testCases = []struct {
-	text     string
-	expected int
+	text           string
+	expectedResult int
 }{
 	{"Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green", 48},
 	{"Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue", 12},
@@ -21,11 +21,10 @@ func TestIsEligible(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(fmt.Sprintf("Checking %s", testCase.text), func(t *testing.T) {
 			green, blue, red := getMaxCount(testCase.text, greenRegex, blueRegex, redRegex)
-			actual_result := green * blue * red
-			if actual_result != testCase.expected {
-				t.Errorf("Result is not equal to the expected result, %s - %d vs %d", testCase.text, actual_result, testCase.expected)
+			actualResult := green * blue * red
+			if actualResult != testCase.expectedResult {
+				t.Errorf("Result is not equal to the expected result, %s - %d vs %d", testCase.text, actualResult, testCase.expectedResult)
 			}
-
 		})
 	}
 
