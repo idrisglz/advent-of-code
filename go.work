@@ -7,4 +7,5 @@ use (
     ./day-2/go/part-2
     ./day-3/go/part-1
     ./day-3/go/part-2
+    ./day-4/go/part-1
 )
