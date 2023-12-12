@@ -23,9 +23,13 @@ var (
 )
 
 func main() {
-	var sum int
+	inputs, err := readInputFile(filename)
+	if err != nil {
+		fmt.Println("unable to read the input file. exiting")
+		return
+	}
 
-	inputs := readInputFile(filename)
+	var sum int
 
 	for _, input := range inputs {
 		id, err := parseGameId(input)
@@ -40,20 +44,26 @@ func main() {
 	fmt.Println(sum)
 }
 
-func readInputFile(filename string) []string {
+func readInputFile(filename string) ([]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		panic("Unable to read the input file")
+		return nil, err
 	}
 
 	defer file.Close()
 
-	var inputs []string
+	var lines []string
 	scanner := bufio.NewScanner(file)
+
 	for scanner.Scan() {
-		inputs = append(inputs, scanner.Text())
+		lines = append(lines, scanner.Text())
 	}
-	return inputs
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return lines, nil
 }
 
 func isEligible(input string, greenRegex *regexp.Regexp, blueRegex *regexp.Regexp, redRegex *regexp.Regexp) bool {

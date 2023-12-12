@@ -30,7 +30,12 @@ type Number struct {
 }
 
 func main() {
-	input := readInputFile(filename)
+	input, err := readInputFile(filename)
+	if err != nil {
+		fmt.Println("unable to read the input file. exiting")
+		return
+	}
+
 	numbers := []Number{}
 
 	sum := 0
@@ -58,20 +63,26 @@ func parseSchematic(es EngineSchematic) Grid {
 	return grid
 }
 
-func readInputFile(filename string) EngineSchematic {
+func readInputFile(filename string) ([]string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		panic("Unable to read the input file.")
+		return nil, err
 	}
 
 	defer file.Close()
 
-	var es EngineSchematic
+	var lines []string
 	scanner := bufio.NewScanner(file)
+
 	for scanner.Scan() {
-		es = append(es, scanner.Text())
+		lines = append(lines, scanner.Text())
 	}
-	return es
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	return lines, nil
 }
 
 func findNumbers(rowIndex int, row []rune) (numbers []Number) {
