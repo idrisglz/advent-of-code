@@ -25,7 +25,7 @@ var (
 func main() {
 	inputs, err := readInputFile(filename)
 	if err != nil {
-		fmt.Println("unable to read the input file. exiting")
+		fmt.Printf("unable to read the input file: %v. exiting\n", err)
 		return
 	}
 

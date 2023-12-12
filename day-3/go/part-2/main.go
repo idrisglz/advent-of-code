@@ -12,7 +12,6 @@ const (
 	filename = "../input.txt"
 )
 
-type EngineSchematic []string
 type Row []rune
 type Grid []Row
 
@@ -32,20 +31,14 @@ type Number struct {
 func main() {
 	input, err := readInputFile(filename)
 	if err != nil {
-		fmt.Println("unable to read the input file. exiting")
+		fmt.Printf("unable to read the input file: %v. exiting\n", err)
 		return
 	}
 
-	numbers := []Number{}
+	var sum int
 
-	sum := 0
 	grid := parseSchematic(input)
-	// eligibilityGrid := initEligibilityGrid(len(grid), len(grid[0]))
-
-	for rowIndex, row := range grid {
-		numbers = append(numbers, findNumbers(rowIndex, row)...)
-	}
-
+	numbers := findNumbersInGrid(grid)
 	gears := findGears(grid, numbers)
 
 	for _, gear := range gears {
@@ -55,7 +48,7 @@ func main() {
 
 }
 
-func parseSchematic(es EngineSchematic) Grid {
+func parseSchematic(es []string) Grid {
 	grid := make(Grid, len(es))
 	for i, line := range es {
 		grid[i] = Row(line)
@@ -85,27 +78,36 @@ func readInputFile(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func findNumbers(rowIndex int, row []rune) (numbers []Number) {
+func findNumbersInGrid(grid Grid) []Number {
+	var numbers []Number
+	for rowIndex, row := range grid {
+		numbers = append(numbers, findNumbersInRow(rowIndex, row)...)
+	}
+	return numbers
+}
+
+func findNumbersInRow(rowIndex int, row Row) []Number {
+	var numbers []Number
 	var current []rune
 	startIndex := -1
-	lastIndex := len(row) - 1
+
 	for i, r := range row {
 		if unicode.IsDigit(r) {
-			current = append(current, r)
 			if startIndex == -1 {
 				startIndex = i
 			}
-		} else if len(current) > 0 {
-			num := createNumber(current, rowIndex, startIndex, i-1)
-			numbers = append(numbers, num)
-			current = []rune{}
+			current = append(current, r)
+		} else {
+			if len(current) > 0 {
+				numbers = append(numbers, createNumber(current, rowIndex, startIndex, i-1))
+				current = []rune{}
+			}
 			startIndex = -1
 		}
 	}
 
 	if len(current) > 0 {
-		num := createNumber(current, rowIndex, startIndex, lastIndex)
-		numbers = append(numbers, num)
+		numbers = append(numbers, createNumber(current, rowIndex, startIndex, len(row)-1))
 	}
 
 	return numbers
@@ -114,29 +116,30 @@ func findNumbers(rowIndex int, row []rune) (numbers []Number) {
 func createNumber(runes []rune, rowIndex int, startIndex, endIndex int) Number {
 	number, err := strconv.Atoi(string(runes))
 	if err != nil {
-		panic(fmt.Sprintf("Failed to parse number: %s", string(runes)))
+		fmt.Println(err)
 	}
 	return Number{Value: number, RowIndex: rowIndex, StartIndex: startIndex, EndIndex: endIndex}
 }
 
-func findGears(es Grid, numbers []Number) (gears []Gear) {
-	for rowIndex, row := range es {
+func findGears(grid Grid, numbers []Number) []Gear {
+	var gears []Gear
+	for rowIndex, row := range grid {
 		for symbolIndex, symbol := range row {
-			if symbol == '*' && len(getGearNumbers(rowIndex, symbolIndex, numbers)) == 2 {
-				gears = append(gears, createGear(rowIndex, symbolIndex, getGearNumbers(rowIndex, symbolIndex, numbers)))
+			if symbol == '*' {
+				gearNumbers := getGearNumbers(rowIndex, symbolIndex, numbers)
+				if len(gearNumbers) == 2 {
+					gears = append(gears, Gear{RowIndex: rowIndex, Index: symbolIndex, GearNumbers: gearNumbers})
+				}
 			}
 		}
 	}
 	return gears
 }
 
-func createGear(rowIndex, index int, gearNums []int) Gear {
-	return Gear{RowIndex: rowIndex, Index: index, GearNumbers: gearNums}
-}
-
-func getGearNumbers(gearRowIndex int, gearIndex int, numbers []Number) (gearNumbers []int) {
+func getGearNumbers(gearRowIndex int, gearIndex int, numbers []Number) []int {
+	var gearNumbers []int
 	for _, number := range numbers {
-		if number.StartIndex <= gearIndex+1 && number.EndIndex >= gearIndex-1 && (number.RowIndex > gearRowIndex-2 && number.RowIndex < gearRowIndex+2) {
+		if number.StartIndex <= gearIndex+1 && number.EndIndex >= gearIndex-1 && (number.RowIndex >= gearRowIndex-1 && number.RowIndex <= gearRowIndex+1) {
 			gearNumbers = append(gearNumbers, number.Value)
 		}
 	}

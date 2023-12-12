@@ -25,49 +25,17 @@ type Number struct {
 func main() {
 	input, err := readInputFile(filename)
 	if err != nil {
-		fmt.Println("unable to read the input file. exiting")
+		fmt.Printf("unable to read the input file: %v. exiting\n", err)
 		return
 	}
 
-	sum := 0
+	var sum int
 	grid := parseSchematic(input)
 	eligibilityGrid := initEligibilityGrid(len(grid), len(grid[0]))
 
-	for rowIndex, row := range grid {
-		for runeIndex, r := range row {
-			if !unicode.IsDigit(r) && r != '.' {
-				eligibilityGrid[rowIndex][runeIndex] = '+'
-				eligibilityGrid[rowIndex][runeIndex-1] = '+'
-				eligibilityGrid[rowIndex][runeIndex+1] = '+'
+	markEligibility(grid, eligibilityGrid)
 
-				if rowIndex != 0 {
-					eligibilityGrid[rowIndex-1][runeIndex] = '+'
-					eligibilityGrid[rowIndex-1][runeIndex-1] = '+'
-					eligibilityGrid[rowIndex-1][runeIndex+1] = '+'
-				}
-
-				if rowIndex < len(grid)-1 {
-					eligibilityGrid[rowIndex+1][runeIndex] = '+'
-					eligibilityGrid[rowIndex+1][runeIndex-1] = '+'
-					eligibilityGrid[rowIndex+1][runeIndex+1] = '+'
-				}
-			}
-		}
-	}
-
-	for rowIndex, row := range grid {
-		numbers := findNumbers(row)
-
-	number_loop:
-		for _, number := range numbers {
-			for i := number.StartIndex; i <= number.EndIndex; i++ {
-				if eligibilityGrid[rowIndex][i] == '+' {
-					sum += number.Value
-					continue number_loop
-				}
-			}
-		}
-	}
+	sum = calculateSum(grid, eligibilityGrid)
 	fmt.Println(sum)
 }
 
@@ -86,6 +54,49 @@ func initEligibilityGrid(cols, rows int) Grid {
 		grid[i] = make(Row, rows)
 	}
 	return grid
+}
+
+func markEligibility(grid Grid, eligibilityGrid Grid) {
+	for rowIndex, row := range grid {
+		for runeIndex, r := range row {
+			if !unicode.IsDigit(r) && r != '.' {
+				updateEligibilityGrid(eligibilityGrid, rowIndex, runeIndex, len(grid), len(row))
+			}
+		}
+	}
+}
+
+func updateEligibilityGrid(grid Grid, rowIndex, runeIndex, maxRow, maxCol int) {
+	for i := -1; i <= 1; i++ {
+		for j := -1; j <= 1; j++ {
+			newRow, newCol := rowIndex+i, runeIndex+j
+			if newRow >= 0 && newRow < maxRow && newCol >= 0 && newCol < maxCol {
+				grid[newRow][newCol] = '+'
+			}
+		}
+	}
+}
+
+func isEligible(number Number, rowIndex int, eligibilityGrid Grid) bool {
+	for i := number.StartIndex; i <= number.EndIndex; i++ {
+		if eligibilityGrid[rowIndex][i] == '+' {
+			return true
+		}
+	}
+	return false
+}
+
+func calculateSum(grid Grid, eligibilityGrid Grid) int {
+	var sum int
+	for rowIndex, row := range grid {
+		numbers := findNumbers(row)
+		for _, number := range numbers {
+			if isEligible(number, rowIndex, eligibilityGrid) {
+				sum += number.Value
+			}
+		}
+	}
+	return sum
 }
 
 func readInputFile(filename string) ([]string, error) {
@@ -110,37 +121,37 @@ func readInputFile(filename string) ([]string, error) {
 	return lines, nil
 }
 
-func findNumbers(input []rune) []Number {
-	numbers := []Number{}
+func findNumbers(row Row) []Number {
+	var numbers []Number
 	var current []rune
 	startIndex := -1
-	lastIndex := len(input) - 1
-	for i, r := range input {
+
+	for i, r := range row {
 		if unicode.IsDigit(r) {
-			current = append(current, r)
 			if startIndex == -1 {
 				startIndex = i
 			}
-		} else if len(current) > 0 {
-			num := createNumber(current, startIndex, i-1)
-			numbers = append(numbers, num)
-			current = []rune{}
+			current = append(current, r)
+		} else {
+			if len(current) > 0 {
+				numbers = append(numbers, createNumber(current, startIndex, i-1))
+				current = []rune{}
+			}
 			startIndex = -1
 		}
 	}
 
 	if len(current) > 0 {
-		num := createNumber(current, startIndex, lastIndex)
-		numbers = append(numbers, num)
+		numbers = append(numbers, createNumber(current, startIndex, len(row)-1))
 	}
 
 	return numbers
 }
 
-func createNumber(runes []rune, start, end int) Number {
-	num, err := strconv.Atoi(string(runes))
+func createNumber(runes []rune, startIndex, endIndex int) Number {
+	number, err := strconv.Atoi(string(runes))
 	if err != nil {
-		panic(fmt.Sprintf("Failed to parse number: %s", string(runes)))
+		fmt.Println(err)
 	}
-	return Number{Value: num, StartIndex: start, EndIndex: end}
+	return Number{Value: number, StartIndex: startIndex, EndIndex: endIndex}
 }

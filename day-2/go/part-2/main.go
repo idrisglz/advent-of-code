@@ -21,9 +21,10 @@ var (
 func main() {
 	inputs, err := readInputFile(filename)
 	if err != nil {
-		fmt.Println("unable to read the input file. exiting")
+		fmt.Printf("unable to read the input file: %v. exiting\n", err)
 		return
 	}
+
 	var sum int
 	for _, input := range inputs {
 		green, blue, red := getMaxCount(input, greenRegex, blueRegex, redRegex)
